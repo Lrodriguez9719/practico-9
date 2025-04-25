@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Usuarios - Practico Nro. 9</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Formulario de Usuarios</h1>
+        <form id="userForm" class="mb-4">
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre:</label>
+                <input type="text" class="form-control" id="nombre" placeholder="Ingrese el nombre del usuario" required>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <input type="email" class="form-control" id="email" placeholder="Ingrese el email del usuario" required>
+            </div>
+            <div class="mb-3">
+                <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento:</label>
+                <input type="date" class="form-control" id="fechaNacimiento" required>
+            </div>
+            <div class="mb-3">
+                <label for="id" class="form-label">ID*:</label>
+                <input type="text" class="form-control" id="id" placeholder="ID del usuario" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Agregar Usuario</button>
+            <div>
+              <small>
+                *: Si ingresa el ID de un usuario que ya ha sido agregado, se actualizaran los
+                datos del usuario con el ID correspondiente.
+              </small>
+            </div>
+        </form>
+
+        <h2 class="text-center">Lista de Usuarios</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Fecha de Nacimiento</th>
+                    <th>ID</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody">
+                <!-- Users will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Load users already saved on local storage
+        updateUserTable();
+
+        // Function to update the user table
+        function updateUserTable() {
+          const userTableBody = document.getElementById('userTableBody');
+          userTableBody.innerHTML = ''; // Clear the table body
+
+          // Retrieve users from local storage
+          const users = JSON.parse(localStorage.getItem('users')) || [];
+
+          // Populate the table with user data
+          users.forEach(user => {
+              const row = userTableBody.insertRow();
+              row.insertCell(0).textContent = user.name;
+              row.insertCell(1).textContent = user.email;
+              row.insertCell(2).textContent = user.birthdate;
+              row.insertCell(3).textContent = user.id;
+
+              // Add a delete button
+              const deleteCell = row.insertCell(4);
+              const deleteButton = document.createElement('button');
+              deleteButton.textContent = 'Eliminar';
+              deleteButton.className = 'btn btn-danger btn-sm';
+              deleteButton.addEventListener('click', function() {
+                  deleteUser(user.id);
+              });
+              deleteCell.appendChild(deleteButton);
+          });
+        }
+
+        // Function to delete a user
+        function deleteUser(userId) {
+          // Retrieve users from local storage
+          const users = JSON.parse(localStorage.getItem('users')) || [];
+          // Filter out the user to be deleted
+          const updatedUsers = users.filter(user => user.id !== userId);
+          // Save the updated user list to local storage
+          localStorage.setItem('users', JSON.stringify(updatedUsers));
+          // Display success notification message
+          alert("Usuario eliminado correctamente.");
+          // Update the user table
+          updateUserTable();
+        }
+
+        // JavaScript to handle form submission and user table display
+        document.getElementById('userForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('nombre').value;
+            const email = document.getElementById('email').value;
+            const birthdate = document.getElementById('fechaNacimiento').value;
+            const id = document.getElementById('id').value;
+
+            // Validate the form inputs
+            if (!name || !email || !birthdate || !id) {
+                alert('Por favor complete todos los campos.');
+                return;
+            }
+
+            // Check if the email is valid
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) {
+                alert('Por favor ingrese un email válido.');
+                return;
+            }
+
+            // Save the user data on the local storage
+            const userData = {
+                name: name,
+                email: email,
+                birthdate: birthdate,
+                id: id
+            };
+
+            // Check if the user ID already exists in local storage
+            const existingUsers = JSON.parse(localStorage.getItem('users')) || [];
+            const existingUser = existingUsers.find(user => user.id === id);
+            if (existingUser) {
+                // Update the existing user's data
+                existingUser.name = name;
+                existingUser.email = email;
+                existingUser.birthdate = birthdate;
+                // Display success notification message
+                alert("Usuario actualizado correctamente.")
+            } else {
+                // Add the new user to the list
+                existingUsers.push(userData);
+                // Display success notification message
+                alert("Usuario agregado correctamente.")
+            }
+            // Save the updated user list to local storage
+            localStorage.setItem('users', JSON.stringify(existingUsers));
+
+            // Update the user table
+            updateUserTable();
+
+            // Clear the form
+            document.getElementById('userForm').reset();
+        });
+    </script>
+</body>
+</html>
